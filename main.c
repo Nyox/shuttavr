@@ -7,6 +7,8 @@
 
 #define BUTTON_HOLD_THRESH 3 * 4 /* qsec */
 
+#define DEBUG_LEDS /* Uncomment to enable debug LEDS */
+
 static enum {
     STATE_IDLE = 0,
     STATE_HOLDING,
@@ -21,7 +23,6 @@ static long qsec_counter;
 static long trigger_counter;
 static char trigger_mode;
 static char pulsing;
-
 
 // convienience for changing prescalers nicely
 #define TCCR1_CS1X_SET(vector) do {\
@@ -60,9 +61,11 @@ static char pulsing;
 int main(void)
 {
     // Declare outputs
-    DDRB |= _BV(PB0);
+    DDRB |= _BV(PB0); // led pin used by pwm
+    #ifdef DEBUG_LEDS
     DDRB |= _BV(PB4);
     DDRB |= _BV(PB3);
+    #endif /* DEBUG_LEDS */
 
     // Switch interrupt
     GIMSK |= _BV(INT0); // enable int0
@@ -130,19 +133,26 @@ ISR(TIM1_COMPB_vect)
 
         case 7:
             IR_OFF; // ir pulse timer turned off already
-            stage = 0;
+
             switch (State) {
-                // we only want a single shot
                 default: // single shot
-                    TCCR1_CS1X_SET(0); // disable counter
+                    State = STATE_IDLE;
+                    TCCR1_CS1X_SET(0); // turn off ir delay timer
                     break;
 
                 // we are in playback mode
                 case STATE_PULSING:
+                    State = STATE_PLAYING;
                     TCCR1_BUTTON_HOLD_CFG;
                     break;
             }
             break;
+
+            #ifdef DEBUG_LEDS
+            PORTB &= ~_BV(PB4);
+            #endif /* DEBUG_LEDS */
+
+            return; // We don't want to do the cleanup stuff
     }
     stage++;
     TCNT1 = 0;
@@ -153,18 +163,21 @@ ISR(INT0_vect)
 {
     static char prev;
     char cur;
-    cur = PINB & _BV(PB2);
+    cur = PINB & _BV(PB2); // switch
 
     // Rising edge
     if (!prev && cur) {
         switch (State) {
+            case STATE_PLAYING:
             case STATE_PULSING:
             case STATE_PULSING_SINGLE:
                 IR_OFF;
                 TCCR1_CS1X_SET(0); // turn off ir delay timer
             default:
+                #ifdef DEBUG_LEDS
                 PORTB &= ~_BV(PB3);
                 PORTB &= ~_BV(PB4);
+                #endif /* DEBUG_LEDS */
                 State = STATE_HOLDING;
 
                 // measuring hold time w/ qsec
@@ -174,8 +187,10 @@ ISR(INT0_vect)
                 break;
 
             case STATE_RECORDING:
+                #ifdef DEBUG_LEDS
                 PORTB &= ~_BV(PB4);
-                PORTB |= _BV(PB3);
+                PORTB |=  _BV(PB3);
+                #endif /* DEBUG_LEDS */
                 State = STATE_PLAYING;
 
                 // Latch recorded time
@@ -202,7 +217,9 @@ ISR(INT0_vect)
                     break;
                 }
                 State = STATE_RECORDING;
+                #ifdef DEBUG_LEDS
                 PORTB |= _BV(PB4);
+                #endif /* DEBUG_LEDS */
 
                 TCNT1 = 0; // zero counter
                 qsec_counter = 0; // recording time in qsec
@@ -221,14 +238,11 @@ ISR(TIM1_COMPA_vect)
         default:
             break;
 
-        case STATE_PULSING:
-            State = STATE_PLAYING;
-            PORTB &= ~_BV(PB4);
-            break;
-
         case STATE_PLAYING:
             if (qsec_counter < trigger_counter) break;
+            #ifdef DEBUG_LEDS
             PORTB |= _BV(PB4);
+            #endif /* DEBUG_LEDS */
             State = STATE_PULSING;
 
             // Switch the timer to pulse the led
