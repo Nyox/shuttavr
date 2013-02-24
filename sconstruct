@@ -1,0 +1,54 @@
+import os
+import os.path
+
+env = Environment()
+main = 'main'
+
+utilsDir = '/usr/local/CrossPack-AVR/bin'
+utils = 'avr-gcc avrdude avr-objcopy'
+gcc, prog, objcopy = map(lambda a: os.path.join(utilsDir, a), utils.split())
+
+dev = filter(lambda a: a.startswith('tty.usb'), os.listdir('/dev'))
+dev = dev and os.path.join('/dev', dev[0])
+if not dev:
+    print 'ISP not found'
+    exit(1)
+
+env.Replace(CC=gcc)
+env.Append(CFLAGS='-Os')
+env.Append(CFLAGS='-mmcu=attiny25')
+env.Append(AVRDUDE=prog)
+env.Append(AVRDUDE_FLAGS='-p t25 -P %s -c avrisp -b 19200' % dev)
+
+#avr-gcc -Wall -Os -DF_CPU=1000000 -mmcu=attiny25 -c main.c -o main.o
+#avr-gcc -Wall -Os -DF_CPU=1000000 -mmcu=attiny25 -o main.elf main.o
+#rm -f main.hex
+#avr-objcopy -j .text -j .data -O ihex main.elf main.hex
+#avr-size --format=avr --mcu=attiny25 main.elf
+
+def flash(env, source): 
+    env.Command('flash', source, '$AVRDUDE $AVRDUDE_FLAGS -Uflash:w:$SOURCE', src_suffix='.hex')
+
+env.AddMethod(flash, 'Flash')
+
+if 'flash' in COMMAND_LINE_TARGETS:
+    env.Flash(main+'.hex')
+
+ocpy = Builder(action='%s -j .text -j.data -O ihex $SOURCE $TARGET' % objcopy,
+               src_suffix='.elf',
+               suffix='.hex')
+
+elf = Builder(action='$CC $CFLAGS -o $TARGET $SOURCE',
+               src_suffix='.o',
+               suffix='.elf')
+
+env['BUILDERS']['Hex'] = ocpy
+env['BUILDERS']['Elf'] = elf
+
+################################################################################
+
+env.Object(main)
+env.Hex(main)
+env.Elf(main)
+
+# vim:ft=python:
