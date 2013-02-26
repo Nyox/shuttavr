@@ -65,6 +65,7 @@ int main(void)
     #ifdef DEBUG_LEDS
     DDRB |= _BV(PB4);
     DDRB |= _BV(PB3);
+    DDRB |= _BV(PB1);
     #endif /* DEBUG_LEDS */
 
     // Switch interrupt
@@ -92,6 +93,8 @@ ISR(TIM1_COMPB_vect)
 {
     static char stage;
     switch (stage) {
+        default:
+            stage = 0;
         case 0:
             IR_ON;
             OCR1B = 125; // 2000us
@@ -133,6 +136,7 @@ ISR(TIM1_COMPB_vect)
 
         case 7:
             IR_OFF; // ir pulse timer turned off already
+            stage = 0;
 
             switch (State) {
                 default: // single shot
@@ -146,7 +150,6 @@ ISR(TIM1_COMPB_vect)
                     TCCR1_BUTTON_HOLD_CFG;
                     break;
             }
-            break;
 
             #ifdef DEBUG_LEDS
             PORTB &= ~_BV(PB4);
@@ -212,6 +215,10 @@ ISR(INT0_vect)
                 // Threshold not met. Do single shot
                 if (qsec_counter < BUTTON_HOLD_THRESH) {
                     State = STATE_PULSING_SINGLE;
+
+                    #ifdef DEBUG_LEDS
+                    PORTB ^= _BV(PB1);
+                    #endif /* DEBUG_LEDS */
 
                     TCCR1_IRLED_DELAY_CFG;
                     break;
