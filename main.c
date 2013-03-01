@@ -4,6 +4,43 @@
  * Feb 28, 2013
  *
  * Default configuration for AVR's ATtiny25
+ *
+ * Package
+ *       +-------+
+ *  PB5 1|o      |8 VCC
+ *  PB3 2|       |7 PB2
+ *  PB4 3|       |6 PB1
+ *  GND 4|       |5 PB0
+ *       +-------+
+ *       ATtiny25
+ *
+ * Pin connections
+ *
+ * PB5: N/C
+ * PB3: N/C
+ * PB4: N/C
+ * GND: GND
+ * PB0: IR LED
+ * PB1: N/C
+ * PB2: Active high switch w/ pulldown
+ * VCC: 3-5V
+ *
+ * Example ckt
+ *                       3V3                    3V3
+ *                        T                      T
+ *            +-------+   |            Button    |
+ *          X-|1     8|---+            _____     |
+ *          X-|2     7|--------------+-o   o-----+
+ *          X-|3     6|-X            |
+ *        +---|4     5|---+          |
+ *        |   +-------+   | IR       |
+ *        |   ATtiny25  ~ O LED      |
+ *        |               |          |
+ *        |              | |        | |
+ *        |              | | R220   | | R220
+ *        |              | |        | |
+ *        |               |          |
+ *        V               V          V GND
  */
 
 // Change to the speed of target uc
