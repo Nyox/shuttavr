@@ -47,6 +47,30 @@ ShuttAVR was design with the following parts in mind:
 
 Note that these parts are not a requirement for this project, only a guideline. Feel free to roll your own BOM.
 
+Pinout
+------
+
+See main.c
+
+Building
+--------
+
+To build, you will need:
+
+- scons
+- avr-toolchain (I recommend CrossPack)
+- Programmer* (I used an Arduino Uno loaded with ArduinoISP)
+    - *You can feasibly program it by hand, if you have lots of time
+
+Build commands you are interested in:
+
+- `scons`: build project
+- `scons flash`: build and flash file using `avrdude` to chip
+
+The current `sconstruct` file is configured for the t25 at 1 MHz. It also does a
+bit of magic to find my ArduinoISP programmer. You may need to change these to
+get it to work, or just compile the files manually.
+
 Design
 ------
 
