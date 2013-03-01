@@ -7,7 +7,7 @@
 
 #define BUTTON_HOLD_THRESH 3 * 4 /* qsec */
 
-#define DEBUG_LEDS /* Uncomment to enable debug LEDS */
+//#define DEBUG_LEDS /* Uncomment to enable debug LEDS */
 
 static enum {
     STATE_IDLE = 0,
