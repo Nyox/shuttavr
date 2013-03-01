@@ -14,6 +14,8 @@ This code allows you to control your camera's shutter via IR. It's main features
 The current design works with Nikon cameras only, though it should be easy to
 modify for any arbitrary camera.
 
+Video demonstration: http://youtu.be/AxuifhkwKsE
+
 Usage
 -----
 
