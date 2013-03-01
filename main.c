@@ -1,3 +1,12 @@
+/*
+ * Open source, AVR based, Nikon intervalometer
+ * Kevin Nygaard <http://www.mutablecode.com>
+ * Feb 28, 2013
+ *
+ * Default configuration for AVR's ATtiny25
+ */
+
+// Change to the speed of target uc
 #define F_CPU 1000000UL
 
 #include <avr/io.h>
@@ -5,8 +14,8 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
+// How long you need to hold the button to enter time record mode
 #define BUTTON_HOLD_THRESH 3 * 4 /* qsec */
-
 //#define DEBUG_LEDS /* Uncomment to enable debug LEDS */
 
 static enum {
