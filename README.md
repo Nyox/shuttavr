@@ -19,14 +19,12 @@ Usage
 
 ShuttAVR has two modes of operation: single-shot mode and intervalometer mode
 
-Single-shot mode
-^^^^^^^^^^^^^^^^
+### Single-shot mode
 
 - Press the button
 - Shutter is fired
 
-Intervalometer mode
-^^^^^^^^^^^^^^^^^^^
+### Intervalometer mode
 
 - Hold button for more than 3 seconds
 - Release button
